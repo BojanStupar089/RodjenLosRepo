@@ -1,0 +1,29 @@
+
+name: Deploy Staford to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - run: dotnet build RodjenLos/RodjenLos.sln -c Release
+      - run: dotnet publish RodjenLos/RodjenLosP/RodjenLosP.csproj -c Release -o ./publish
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: rodjenlos
+          package: ./publish
